@@ -10,9 +10,9 @@ from moveit_configs_utils import MoveItConfigsBuilder
 
 def generate_launch_description():
     moveit_config = (
-        MoveItConfigsBuilder("moveit_resources_panda")
-        .robot_description(file_path="config/panda.urdf.xacro")
-        .joint_limits(file_path="config/hard_joint_limits.yaml")
+        MoveItConfigsBuilder("ur5_gripper_ros2")
+        .robot_description(file_path="config/ur5.urdf_fake.xacro")
+        .joint_limits(file_path="config/joint_limits.yaml")
         .to_moveit_configs()
     )
 
@@ -23,18 +23,18 @@ def generate_launch_description():
 
     # Get parameters for the Servo node
     servo_params = {
-        "moveit_servo": ParameterBuilder("moveit_servo")
-        .yaml("config/panda_simulated_config.yaml")
+        "moveit_servo": ParameterBuilder("ur5_gripper_ros2_moveit_config")
+        .yaml("config/ur_simulated_config.yaml")
         .to_dict()
     }
 
     # This sets the update rate and planning group name for the acceleration limiting filter.
     acceleration_filter_update_period = {"update_period": 0.01}
-    planning_group_name = {"planning_group_name": "panda_arm"}
+    planning_group_name = {"planning_group_name": "manipulator"}
 
     # RViz
     rviz_config_file = (
-        get_package_share_directory("moveit_servo")
+        get_package_share_directory("ur5_gripper_ros2_moveit_config")
         + "/config/demo_rviz_config_ros.rviz"
     )
     rviz_node = launch_ros.actions.Node(
@@ -51,9 +51,9 @@ def generate_launch_description():
 
     # ros2_control using FakeSystem as hardware
     ros2_controllers_path = os.path.join(
-        get_package_share_directory("moveit_resources_panda_moveit_config"),
+        get_package_share_directory("ur5_gripper_ros2_moveit_config"),
         "config",
-        "ros2_controllers.yaml",
+        "ros2_controllers_servo_example_ur.yaml",
     )
     ros2_control_node = launch_ros.actions.Node(
         package="controller_manager",
@@ -80,7 +80,7 @@ def generate_launch_description():
     panda_arm_controller_spawner = launch_ros.actions.Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["panda_arm_controller", "-c", "/controller_manager"],
+        arguments=["manipulator_controller", "-c", "/controller_manager"],
     )
 
     # Launch as much as possible in components
@@ -112,12 +112,6 @@ def generate_launch_description():
                 plugin="robot_state_publisher::RobotStatePublisher",
                 name="robot_state_publisher",
                 parameters=[moveit_config.robot_description],
-            ),
-            launch_ros.descriptions.ComposableNode(
-                package="tf2_ros",
-                plugin="tf2_ros::StaticTransformBroadcasterNode",
-                name="static_tf2_broadcaster",
-                parameters=[{"child_frame_id": "/panda_link0", "frame_id": "/world"}],
             ),
         ],
         output="screen",
