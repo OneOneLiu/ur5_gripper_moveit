@@ -34,7 +34,7 @@
 req.planner_id = "RRTstar";
 req.group_name = PLANNING_GROUP;
 req.goal_constraints.push_back(pose_goal);
-planning_interface::PlanningContextPtr context = planner_instance->getPlanningContext(planning_scene, req, res.error_code_);
+planning_interface::PlanningContextPtr context = planner_instance->getPlanningContext(planning_scene, req, res.error_code);
 context->solve(res);
 ```
 
