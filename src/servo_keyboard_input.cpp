@@ -77,6 +77,12 @@ constexpr int8_t KEYCODE_T = 0x74;
 constexpr int8_t KEYCODE_W = 0x77;
 constexpr int8_t KEYCODE_E = 0x65;
 constexpr int8_t KEYCODE_S = 0x73;
+constexpr int8_t KEYCODE_A = 0x61;
+constexpr int8_t KEYCODE_D = 0x64;
+constexpr int8_t KEYCODE_F = 0x66;
+constexpr int8_t KEYCODE_V = 0x76;
+constexpr int8_t KEYCODE_X = 0x78;
+constexpr int8_t KEYCODE_C = 0x63;
 }  // namespace
 
 // Some constants used in the Servo Teleop demo
@@ -317,6 +323,9 @@ int KeyboardServo::keyLoop()
   puts("---------------------------");
   puts("All commands are in the planning frame");
   puts("Use arrow keys and the '.' and ';' keys to Cartesian jog");
+  puts("Use 'a' and 'd' for Yaw rotation (Z-axis)");
+  puts("Use 'f' and 'v' for Pitch rotation (Y-axis)");
+  puts("Use 'x' and 'c' for Roll rotation (X-axis)");
   puts("Use 1|2|3|4|5|6 keys to joint jog. 'r' to reverse the direction of jogging.");
   puts("Use 'j' to select joint jog. ");
   puts("Use 't' to select twist ");
@@ -355,7 +364,7 @@ int KeyboardServo::keyLoop()
         if (c == '[')
         {
           input.readOne(&c);
-          RCLCPP_INFO(nh_->get_logger(), "Arrow key sequence: ESC [ %c (0x%02X)", c, c);
+          RCLCPP_DEBUG(nh_->get_logger(), "Arrow key sequence: ESC [ %c (0x%02X)", c, c);
         }
         else
         {
@@ -371,7 +380,7 @@ int KeyboardServo::keyLoop()
     }
     else
     {
-      RCLCPP_INFO(nh_->get_logger(), "Key pressed: 0x%02X (%c)", c, c);
+      RCLCPP_DEBUG(nh_->get_logger(), "Key pressed: 0x%02X (%c)", c, c);
     }
 
     // Handle the key press
@@ -392,7 +401,7 @@ void KeyboardServo::handleKeyPress(char c)
   switch (c)
   {
     case KEYCODE_LEFT:
-      RCLCPP_INFO(nh_->get_logger(), "LEFT pressed");
+      RCLCPP_DEBUG(nh_->get_logger(), "LEFT pressed");
       current_twist_cmd_.twist.linear.y = -0.1;
       current_twist_cmd_.twist.linear.x = 0.0;
       current_twist_cmd_.twist.linear.z = 0.0;
@@ -400,7 +409,7 @@ void KeyboardServo::handleKeyPress(char c)
       joint_active_ = false;
       break;
     case KEYCODE_RIGHT:
-      RCLCPP_INFO(nh_->get_logger(), "RIGHT pressed");
+      RCLCPP_DEBUG(nh_->get_logger(), "RIGHT pressed");
       current_twist_cmd_.twist.linear.y = 0.1;
       current_twist_cmd_.twist.linear.x = 0.0;
       current_twist_cmd_.twist.linear.z = 0.0;
@@ -408,7 +417,7 @@ void KeyboardServo::handleKeyPress(char c)
       joint_active_ = false;
       break;
     case KEYCODE_UP:
-      RCLCPP_INFO(nh_->get_logger(), "UP pressed");
+      RCLCPP_DEBUG(nh_->get_logger(), "UP pressed");
       current_twist_cmd_.twist.linear.x = 0.1;
       current_twist_cmd_.twist.linear.y = 0.0;
       current_twist_cmd_.twist.linear.z = 0.0;
@@ -416,7 +425,7 @@ void KeyboardServo::handleKeyPress(char c)
       joint_active_ = false;
       break;
     case KEYCODE_DOWN:
-      RCLCPP_INFO(nh_->get_logger(), "DOWN pressed");
+      RCLCPP_DEBUG(nh_->get_logger(), "DOWN pressed");
       current_twist_cmd_.twist.linear.x = -0.1;
       current_twist_cmd_.twist.linear.y = 0.0;
       current_twist_cmd_.twist.linear.z = 0.0;
@@ -424,7 +433,7 @@ void KeyboardServo::handleKeyPress(char c)
       joint_active_ = false;
       break;
     case KEYCODE_PERIOD:
-      RCLCPP_INFO(nh_->get_logger(), "PERIOD pressed");
+      RCLCPP_DEBUG(nh_->get_logger(), "PERIOD pressed");
       current_twist_cmd_.twist.linear.z = -0.1;
       current_twist_cmd_.twist.linear.x = 0.0;
       current_twist_cmd_.twist.linear.y = 0.0;
@@ -432,7 +441,7 @@ void KeyboardServo::handleKeyPress(char c)
       joint_active_ = false;
       break;
     case KEYCODE_SEMICOLON:
-      RCLCPP_INFO(nh_->get_logger(), "SEMICOLON pressed");
+      RCLCPP_DEBUG(nh_->get_logger(), "SEMICOLON pressed");
       current_twist_cmd_.twist.linear.z = 0.1;
       current_twist_cmd_.twist.linear.x = 0.0;
       current_twist_cmd_.twist.linear.y = 0.0;
@@ -440,57 +449,57 @@ void KeyboardServo::handleKeyPress(char c)
       joint_active_ = false;
       break;
     case KEYCODE_1:
-      RCLCPP_INFO(nh_->get_logger(), "1 pressed");
+      RCLCPP_DEBUG(nh_->get_logger(), "1 pressed");
       std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
       current_joint_cmd_.velocities[0] = joint_vel_cmd_;
       joint_active_ = true;
       twist_active_ = false;
       break;
     case KEYCODE_2:
-      RCLCPP_INFO(nh_->get_logger(), "2 pressed");
+      RCLCPP_DEBUG(nh_->get_logger(), "2 pressed");
       std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
       current_joint_cmd_.velocities[1] = joint_vel_cmd_;
       joint_active_ = true;
       twist_active_ = false;
       break;
     case KEYCODE_3:
-      RCLCPP_INFO(nh_->get_logger(), "3 pressed");
+      RCLCPP_DEBUG(nh_->get_logger(), "3 pressed");
       std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
       current_joint_cmd_.velocities[2] = joint_vel_cmd_;
       joint_active_ = true;
       twist_active_ = false;
       break;
     case KEYCODE_4:
-      RCLCPP_INFO(nh_->get_logger(), "4 pressed");
+      RCLCPP_DEBUG(nh_->get_logger(), "4 pressed");
       std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
       current_joint_cmd_.velocities[3] = joint_vel_cmd_;
       joint_active_ = true;
       twist_active_ = false;
       break;
     case KEYCODE_5:
-      RCLCPP_INFO(nh_->get_logger(), "5 pressed");
+      RCLCPP_DEBUG(nh_->get_logger(), "5 pressed");
       std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
       current_joint_cmd_.velocities[4] = joint_vel_cmd_;
       joint_active_ = true;
       twist_active_ = false;
       break;
     case KEYCODE_6:
-      RCLCPP_INFO(nh_->get_logger(), "6 pressed");
+      RCLCPP_DEBUG(nh_->get_logger(), "6 pressed");
       std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
       current_joint_cmd_.velocities[5] = joint_vel_cmd_;
       joint_active_ = true;
       twist_active_ = false;
       break;
     case KEYCODE_R:
-      RCLCPP_INFO(nh_->get_logger(), "R pressed - reversing direction");
+      RCLCPP_DEBUG(nh_->get_logger(), "R pressed - reversing direction");
       joint_vel_cmd_ *= -1;
       break;
     case KEYCODE_S:  // Stop command
-      RCLCPP_INFO(nh_->get_logger(), "S pressed - stopping");
+      RCLCPP_DEBUG(nh_->get_logger(), "S pressed - stopping");
       publishStopCommand();
       break;
     case KEYCODE_J:
-      RCLCPP_INFO(nh_->get_logger(), "J pressed - switching to joint mode");
+      RCLCPP_DEBUG(nh_->get_logger(), "J pressed - switching to joint mode");
       request_ = std::make_shared<moveit_msgs::srv::ServoCommandType::Request>();
       request_->command_type = moveit_msgs::srv::ServoCommandType::Request::JOINT_JOG;
       if (switch_input_->wait_for_service(std::chrono::seconds(1)))
@@ -532,6 +541,55 @@ void KeyboardServo::handleKeyPress(char c)
       RCLCPP_INFO(nh_->get_logger(), "E pressed - switching to end effector frame");
       command_frame_id_ = EE_FRAME_ID;
       current_twist_cmd_.header.frame_id = command_frame_id_;
+      break;
+    // Rotation controls
+    case KEYCODE_A:  // Yaw left (negative Z rotation)
+      RCLCPP_DEBUG(nh_->get_logger(), "A pressed - Yaw left");
+      current_twist_cmd_.twist.angular.z = -0.5;
+      current_twist_cmd_.twist.angular.x = 0.0;
+      current_twist_cmd_.twist.angular.y = 0.0;
+      twist_active_ = true;
+      joint_active_ = false;
+      break;
+    case KEYCODE_D:  // Yaw right (positive Z rotation)
+      RCLCPP_DEBUG(nh_->get_logger(), "D pressed - Yaw right");
+      current_twist_cmd_.twist.angular.z = 0.5;
+      current_twist_cmd_.twist.angular.x = 0.0;
+      current_twist_cmd_.twist.angular.y = 0.0;
+      twist_active_ = true;
+      joint_active_ = false;
+      break;
+    case KEYCODE_F:  // Pitch up (positive Y rotation)
+      RCLCPP_DEBUG(nh_->get_logger(), "F pressed - Pitch up");
+      current_twist_cmd_.twist.angular.y = 0.5;
+      current_twist_cmd_.twist.angular.x = 0.0;
+      current_twist_cmd_.twist.angular.z = 0.0;
+      twist_active_ = true;
+      joint_active_ = false;
+      break;
+    case KEYCODE_V:  // Pitch down (negative Y rotation)
+      RCLCPP_DEBUG(nh_->get_logger(), "V pressed - Pitch down");
+      current_twist_cmd_.twist.angular.y = -0.5;
+      current_twist_cmd_.twist.angular.x = 0.0;
+      current_twist_cmd_.twist.angular.z = 0.0;
+      twist_active_ = true;
+      joint_active_ = false;
+      break;
+    case KEYCODE_X:  // Roll left (negative X rotation)
+      RCLCPP_DEBUG(nh_->get_logger(), "X pressed - Roll left");
+      current_twist_cmd_.twist.angular.x = -0.5;
+      current_twist_cmd_.twist.angular.y = 0.0;
+      current_twist_cmd_.twist.angular.z = 0.0;
+      twist_active_ = true;
+      joint_active_ = false;
+      break;
+    case KEYCODE_C:  // Roll right (positive X rotation)
+      RCLCPP_DEBUG(nh_->get_logger(), "C pressed - Roll right");
+      current_twist_cmd_.twist.angular.x = 0.5;
+      current_twist_cmd_.twist.angular.y = 0.0;
+      current_twist_cmd_.twist.angular.z = 0.0;
+      twist_active_ = true;
+      joint_active_ = false;
       break;
     case KEYCODE_Q:
       RCLCPP_INFO(nh_->get_logger(), "Q pressed - quitting");
