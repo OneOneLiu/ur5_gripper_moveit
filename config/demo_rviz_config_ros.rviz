@@ -188,9 +188,13 @@ Visualization Manager:
           Value: true
         base_link_inertia:
           Value: false
+        camera:
+          Value: false
         finger_center:
           Value: true
         flange:
+          Value: false
+        force_sensor:
           Value: false
         forearm_link:
           Value: false
@@ -218,6 +222,8 @@ Visualization Manager:
           Value: false
         tool0:
           Value: false
+        tool0_controller:
+          Value: false
         upper_arm_link:
           Value: false
         world:
@@ -230,14 +236,15 @@ Visualization Manager:
           Value: false
       Marker Scale: 1
       Name: TF
-      Show Arrows: true
+      Show Arrows: false
       Show Axes: true
       Show Names: false
       Tree:
         world:
           base_link:
             base:
-              {}
+              tool0_controller:
+                {}
             base_link_inertia:
               shoulder_link:
                 upper_arm_link:
@@ -247,6 +254,9 @@ Visualization Manager:
                         wrist_3_link:
                           flange:
                             tool0:
+                              camera:
+                                force_sensor:
+                                  {}
                               finger_center:
                                 {}
                               robotiq_85_base_link:
@@ -327,10 +337,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.025397952646017075
+      Pitch: 0.1303979456424713
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.938581943511963
+      Yaw: 5.188581943511963
     Saved: ~
 Window Geometry:
   Displays:
@@ -346,5 +356,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1586
-  X: 451
-  Y: 154
+  X: 2886
+  Y: 581
