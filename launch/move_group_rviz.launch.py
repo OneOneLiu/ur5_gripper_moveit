@@ -17,10 +17,10 @@ from launch_ros.substitutions import FindPackageShare
 from launch.substitutions import PathJoinSubstitution
 
 def generate_launch_description():
-    moveit_config = MoveItConfigsBuilder("ur5", package_name="ur5_gripper_ros2_moveit").to_moveit_configs()
+    moveit_config = MoveItConfigsBuilder("ur5", package_name="ur5_gripper_ros2_moveit_config").to_moveit_configs()
 
     rviz_config = PathJoinSubstitution(
-        [FindPackageShare("ur5_gripper_ros2_moveit"), "config", "moveit.rviz"]
+        [FindPackageShare("ur5_gripper_ros2_moveit_config"), "config", "moveit.rviz"]
     )
 
     # Create LaunchDescription
