@@ -88,7 +88,7 @@ const size_t ROS_QUEUE_SIZE = 10;
 const std::string PLANNING_FRAME_ID = "base_link";
 const std::string EE_FRAME_ID = "finger_center";
 const double PUBLISH_RATE = 50.0;  // Hz
-const double STOP_TIMEOUT = 0.1;   // seconds
+const double STOP_TIMEOUT = 0.5;   // seconds - increased for better responsiveness
 }  // namespace
 
 // A class for reading the key inputs from the terminal
