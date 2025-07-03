@@ -88,7 +88,7 @@ const size_t ROS_QUEUE_SIZE = 10;
 const std::string PLANNING_FRAME_ID = "base_link";
 const std::string EE_FRAME_ID = "finger_center";
 const double PUBLISH_RATE = 50.0;  // Hz
-const double STOP_TIMEOUT = 0.5;   // seconds - increased for better responsiveness
+const double STOP_TIMEOUT = 0.1;   // seconds - reduced for better safety
 }  // namespace
 
 // A class for reading the key inputs from the terminal
@@ -146,6 +146,8 @@ private:
   void spin();
   void publishStopCommand();
   void publishContinuousCommands();
+  void handleKeyPress(char c);
+  void handleKeyRelease();
 
   rclcpp::Node::SharedPtr nh_;
 
@@ -165,10 +167,15 @@ private:
   rclcpp::Time last_command_time_;
   rclcpp::TimerBase::SharedPtr publish_timer_;
   std::mutex command_mutex_;
+  
+  // Key state tracking
+  bool key_pressed_;
+  char last_key_;
 };
 
 KeyboardServo::KeyboardServo() : joint_vel_cmd_(0.5), command_frame_id_{ "base_link" }, 
-                                  twist_active_(false), joint_active_(false)
+                                  twist_active_(false), joint_active_(false),
+                                  key_pressed_(false), last_key_(0)
 {
   nh_ = rclcpp::Node::make_shared("servo_keyboard_input");
 
@@ -253,12 +260,35 @@ void KeyboardServo::publishContinuousCommands()
   // Check if commands are still active
   if (twist_active_ && (now - last_command_time_).seconds() > STOP_TIMEOUT)
   {
+    RCLCPP_DEBUG(nh_->get_logger(), "Twist command timeout, stopping");
     twist_active_ = false;
+    // Send multiple stop commands to ensure stopping
+    for (int i = 0; i < 3; ++i)
+    {
+      current_twist_cmd_.twist.linear.x = 0.0;
+      current_twist_cmd_.twist.linear.y = 0.0;
+      current_twist_cmd_.twist.linear.z = 0.0;
+      current_twist_cmd_.twist.angular.x = 0.0;
+      current_twist_cmd_.twist.angular.y = 0.0;
+      current_twist_cmd_.twist.angular.z = 0.0;
+      current_twist_cmd_.header.stamp = now;
+      twist_pub_->publish(current_twist_cmd_);
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
   }
   
   if (joint_active_ && (now - last_command_time_).seconds() > STOP_TIMEOUT)
   {
+    RCLCPP_DEBUG(nh_->get_logger(), "Joint command timeout, stopping");
     joint_active_ = false;
+    // Send multiple stop commands to ensure stopping
+    for (int i = 0; i < 3; ++i)
+    {
+      std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
+      current_joint_cmd_.header.stamp = now;
+      joint_pub_->publish(current_joint_cmd_);
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
   }
   
   // Publish active commands
@@ -279,6 +309,7 @@ int KeyboardServo::keyLoop()
 {
   char c;
   bool key_pressed = false;
+  rclcpp::Time last_key_time = nh_->now();
 
   std::thread{ [this]() { return spin(); } }.detach();
 
@@ -295,6 +326,13 @@ int KeyboardServo::keyLoop()
 
   for (;;)
   {
+    // Check for key release (no input for a short time)
+    auto now = nh_->now();
+    if (key_pressed_ && (now - last_key_time).seconds() > 0.05) // 50ms timeout
+    {
+      handleKeyRelease();
+    }
+
     // get the next event from the keyboard
     try
     {
@@ -306,165 +344,225 @@ int KeyboardServo::keyLoop()
       return -1;
     }
 
-    RCLCPP_DEBUG(nh_->get_logger(), "value: 0x%02X\n", c);
+    last_key_time = now;
 
-    std::lock_guard<std::mutex> lock(command_mutex_);
-    last_command_time_ = nh_->now();
-    key_pressed = true;
-
-    // Use read key-press
-    switch (c)
+    // Handle arrow key sequences (ESC [ A/B/C/D)
+    if (c == 27) // ESC
     {
-      case KEYCODE_LEFT:
-        RCLCPP_DEBUG(nh_->get_logger(), "LEFT");
-        current_twist_cmd_.twist.linear.y = -0.1;
-        current_twist_cmd_.twist.linear.x = 0.0;
-        current_twist_cmd_.twist.linear.z = 0.0;
-        twist_active_ = true;
-        joint_active_ = false;
-        break;
-      case KEYCODE_RIGHT:
-        RCLCPP_DEBUG(nh_->get_logger(), "RIGHT");
-        current_twist_cmd_.twist.linear.y = 0.1;
-        current_twist_cmd_.twist.linear.x = 0.0;
-        current_twist_cmd_.twist.linear.z = 0.0;
-        twist_active_ = true;
-        joint_active_ = false;
-        break;
-      case KEYCODE_UP:
-        RCLCPP_DEBUG(nh_->get_logger(), "UP");
-        current_twist_cmd_.twist.linear.x = 0.1;
-        current_twist_cmd_.twist.linear.y = 0.0;
-        current_twist_cmd_.twist.linear.z = 0.0;
-        twist_active_ = true;
-        joint_active_ = false;
-        break;
-      case KEYCODE_DOWN:
-        RCLCPP_DEBUG(nh_->get_logger(), "DOWN");
-        current_twist_cmd_.twist.linear.x = -0.1;
-        current_twist_cmd_.twist.linear.y = 0.0;
-        current_twist_cmd_.twist.linear.z = 0.0;
-        twist_active_ = true;
-        joint_active_ = false;
-        break;
-      case KEYCODE_PERIOD:
-        RCLCPP_DEBUG(nh_->get_logger(), "PERIOD");
-        current_twist_cmd_.twist.linear.z = -0.1;
-        current_twist_cmd_.twist.linear.x = 0.0;
-        current_twist_cmd_.twist.linear.y = 0.0;
-        twist_active_ = true;
-        joint_active_ = false;
-        break;
-      case KEYCODE_SEMICOLON:
-        RCLCPP_DEBUG(nh_->get_logger(), "SEMICOLON");
-        current_twist_cmd_.twist.linear.z = 0.1;
-        current_twist_cmd_.twist.linear.x = 0.0;
-        current_twist_cmd_.twist.linear.y = 0.0;
-        twist_active_ = true;
-        joint_active_ = false;
-        break;
-      case KEYCODE_1:
-        RCLCPP_DEBUG(nh_->get_logger(), "1");
-        std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
-        current_joint_cmd_.velocities[0] = joint_vel_cmd_;
-        joint_active_ = true;
-        twist_active_ = false;
-        break;
-      case KEYCODE_2:
-        RCLCPP_DEBUG(nh_->get_logger(), "2");
-        std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
-        current_joint_cmd_.velocities[1] = joint_vel_cmd_;
-        joint_active_ = true;
-        twist_active_ = false;
-        break;
-      case KEYCODE_3:
-        RCLCPP_DEBUG(nh_->get_logger(), "3");
-        std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
-        current_joint_cmd_.velocities[2] = joint_vel_cmd_;
-        joint_active_ = true;
-        twist_active_ = false;
-        break;
-      case KEYCODE_4:
-        RCLCPP_DEBUG(nh_->get_logger(), "4");
-        std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
-        current_joint_cmd_.velocities[3] = joint_vel_cmd_;
-        joint_active_ = true;
-        twist_active_ = false;
-        break;
-      case KEYCODE_5:
-        RCLCPP_DEBUG(nh_->get_logger(), "5");
-        std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
-        current_joint_cmd_.velocities[4] = joint_vel_cmd_;
-        joint_active_ = true;
-        twist_active_ = false;
-        break;
-      case KEYCODE_6:
-        RCLCPP_DEBUG(nh_->get_logger(), "6");
-        std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
-        current_joint_cmd_.velocities[5] = joint_vel_cmd_;
-        joint_active_ = true;
-        twist_active_ = false;
-        break;
-      case KEYCODE_R:
-        RCLCPP_DEBUG(nh_->get_logger(), "r");
-        joint_vel_cmd_ *= -1;
-        break;
-      case KEYCODE_S:  // Stop command
-        RCLCPP_DEBUG(nh_->get_logger(), "s");
-        publishStopCommand();
-        break;
-      case KEYCODE_J:
-        RCLCPP_DEBUG(nh_->get_logger(), "j");
-        request_ = std::make_shared<moveit_msgs::srv::ServoCommandType::Request>();
-        request_->command_type = moveit_msgs::srv::ServoCommandType::Request::JOINT_JOG;
-        if (switch_input_->wait_for_service(std::chrono::seconds(1)))
+      try
+      {
+        input.readOne(&c);
+        if (c == '[')
         {
-          auto result = switch_input_->async_send_request(request_);
-          if (result.get()->success)
-          {
-            RCLCPP_INFO_STREAM(nh_->get_logger(), "Switched to input type: JointJog");
-          }
-          else
-          {
-            RCLCPP_WARN_STREAM(nh_->get_logger(), "Could not switch input to: JointJog");
-          }
+          input.readOne(&c);
+          RCLCPP_INFO(nh_->get_logger(), "Arrow key sequence: ESC [ %c (0x%02X)", c, c);
         }
-        break;
-      case KEYCODE_T:
-        RCLCPP_DEBUG(nh_->get_logger(), "t");
-        request_ = std::make_shared<moveit_msgs::srv::ServoCommandType::Request>();
-        request_->command_type = moveit_msgs::srv::ServoCommandType::Request::TWIST;
-        if (switch_input_->wait_for_service(std::chrono::seconds(1)))
+        else
         {
-          auto result = switch_input_->async_send_request(request_);
-          if (result.get()->success)
-          {
-            RCLCPP_INFO_STREAM(nh_->get_logger(), "Switched to input type: Twist");
-          }
-          else
-          {
-            RCLCPP_WARN_STREAM(nh_->get_logger(), "Could not switch input to: Twist");
-          }
+          RCLCPP_INFO(nh_->get_logger(), "ESC followed by: %c (0x%02X)", c, c);
+          continue;
         }
-        break;
-      case KEYCODE_W:
-        RCLCPP_DEBUG(nh_->get_logger(), "w");
-        RCLCPP_INFO_STREAM(nh_->get_logger(), "Command frame set to: " << PLANNING_FRAME_ID);
-        command_frame_id_ = PLANNING_FRAME_ID;
-        current_twist_cmd_.header.frame_id = command_frame_id_;
-        break;
-      case KEYCODE_E:
-        RCLCPP_DEBUG(nh_->get_logger(), "e");
-        RCLCPP_INFO_STREAM(nh_->get_logger(), "Command frame set to: " << EE_FRAME_ID);
-        command_frame_id_ = EE_FRAME_ID;
-        current_twist_cmd_.header.frame_id = command_frame_id_;
-        break;
-      case KEYCODE_Q:
-        RCLCPP_DEBUG(nh_->get_logger(), "quit");
-        publishStopCommand();
-        return 0;
+      }
+      catch (const std::runtime_error&)
+      {
+        RCLCPP_WARN(nh_->get_logger(), "Incomplete arrow key sequence");
+        continue;
+      }
     }
+    else
+    {
+      RCLCPP_INFO(nh_->get_logger(), "Key pressed: 0x%02X (%c)", c, c);
+    }
+
+    // Handle the key press
+    handleKeyPress(c);
   }
 
   return 0;
+}
+
+void KeyboardServo::handleKeyPress(char c)
+{
+  std::lock_guard<std::mutex> lock(command_mutex_);
+  last_command_time_ = nh_->now();
+  key_pressed_ = true;
+  last_key_ = c;
+
+  // Use read key-press
+  switch (c)
+  {
+    case KEYCODE_LEFT:
+      RCLCPP_INFO(nh_->get_logger(), "LEFT pressed");
+      current_twist_cmd_.twist.linear.y = -0.1;
+      current_twist_cmd_.twist.linear.x = 0.0;
+      current_twist_cmd_.twist.linear.z = 0.0;
+      twist_active_ = true;
+      joint_active_ = false;
+      break;
+    case KEYCODE_RIGHT:
+      RCLCPP_INFO(nh_->get_logger(), "RIGHT pressed");
+      current_twist_cmd_.twist.linear.y = 0.1;
+      current_twist_cmd_.twist.linear.x = 0.0;
+      current_twist_cmd_.twist.linear.z = 0.0;
+      twist_active_ = true;
+      joint_active_ = false;
+      break;
+    case KEYCODE_UP:
+      RCLCPP_INFO(nh_->get_logger(), "UP pressed");
+      current_twist_cmd_.twist.linear.x = 0.1;
+      current_twist_cmd_.twist.linear.y = 0.0;
+      current_twist_cmd_.twist.linear.z = 0.0;
+      twist_active_ = true;
+      joint_active_ = false;
+      break;
+    case KEYCODE_DOWN:
+      RCLCPP_INFO(nh_->get_logger(), "DOWN pressed");
+      current_twist_cmd_.twist.linear.x = -0.1;
+      current_twist_cmd_.twist.linear.y = 0.0;
+      current_twist_cmd_.twist.linear.z = 0.0;
+      twist_active_ = true;
+      joint_active_ = false;
+      break;
+    case KEYCODE_PERIOD:
+      RCLCPP_INFO(nh_->get_logger(), "PERIOD pressed");
+      current_twist_cmd_.twist.linear.z = -0.1;
+      current_twist_cmd_.twist.linear.x = 0.0;
+      current_twist_cmd_.twist.linear.y = 0.0;
+      twist_active_ = true;
+      joint_active_ = false;
+      break;
+    case KEYCODE_SEMICOLON:
+      RCLCPP_INFO(nh_->get_logger(), "SEMICOLON pressed");
+      current_twist_cmd_.twist.linear.z = 0.1;
+      current_twist_cmd_.twist.linear.x = 0.0;
+      current_twist_cmd_.twist.linear.y = 0.0;
+      twist_active_ = true;
+      joint_active_ = false;
+      break;
+    case KEYCODE_1:
+      RCLCPP_INFO(nh_->get_logger(), "1 pressed");
+      std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
+      current_joint_cmd_.velocities[0] = joint_vel_cmd_;
+      joint_active_ = true;
+      twist_active_ = false;
+      break;
+    case KEYCODE_2:
+      RCLCPP_INFO(nh_->get_logger(), "2 pressed");
+      std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
+      current_joint_cmd_.velocities[1] = joint_vel_cmd_;
+      joint_active_ = true;
+      twist_active_ = false;
+      break;
+    case KEYCODE_3:
+      RCLCPP_INFO(nh_->get_logger(), "3 pressed");
+      std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
+      current_joint_cmd_.velocities[2] = joint_vel_cmd_;
+      joint_active_ = true;
+      twist_active_ = false;
+      break;
+    case KEYCODE_4:
+      RCLCPP_INFO(nh_->get_logger(), "4 pressed");
+      std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
+      current_joint_cmd_.velocities[3] = joint_vel_cmd_;
+      joint_active_ = true;
+      twist_active_ = false;
+      break;
+    case KEYCODE_5:
+      RCLCPP_INFO(nh_->get_logger(), "5 pressed");
+      std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
+      current_joint_cmd_.velocities[4] = joint_vel_cmd_;
+      joint_active_ = true;
+      twist_active_ = false;
+      break;
+    case KEYCODE_6:
+      RCLCPP_INFO(nh_->get_logger(), "6 pressed");
+      std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
+      current_joint_cmd_.velocities[5] = joint_vel_cmd_;
+      joint_active_ = true;
+      twist_active_ = false;
+      break;
+    case KEYCODE_R:
+      RCLCPP_INFO(nh_->get_logger(), "R pressed - reversing direction");
+      joint_vel_cmd_ *= -1;
+      break;
+    case KEYCODE_S:  // Stop command
+      RCLCPP_INFO(nh_->get_logger(), "S pressed - stopping");
+      publishStopCommand();
+      break;
+    case KEYCODE_J:
+      RCLCPP_INFO(nh_->get_logger(), "J pressed - switching to joint mode");
+      request_ = std::make_shared<moveit_msgs::srv::ServoCommandType::Request>();
+      request_->command_type = moveit_msgs::srv::ServoCommandType::Request::JOINT_JOG;
+      if (switch_input_->wait_for_service(std::chrono::seconds(1)))
+      {
+        auto result = switch_input_->async_send_request(request_);
+        if (result.get()->success)
+        {
+          RCLCPP_INFO_STREAM(nh_->get_logger(), "Switched to input type: JointJog");
+        }
+        else
+        {
+          RCLCPP_WARN_STREAM(nh_->get_logger(), "Could not switch input to: JointJog");
+        }
+      }
+      break;
+    case KEYCODE_T:
+      RCLCPP_INFO(nh_->get_logger(), "T pressed - switching to twist mode");
+      request_ = std::make_shared<moveit_msgs::srv::ServoCommandType::Request>();
+      request_->command_type = moveit_msgs::srv::ServoCommandType::Request::TWIST;
+      if (switch_input_->wait_for_service(std::chrono::seconds(1)))
+      {
+        auto result = switch_input_->async_send_request(request_);
+        if (result.get()->success)
+        {
+          RCLCPP_INFO_STREAM(nh_->get_logger(), "Switched to input type: Twist");
+        }
+        else
+        {
+          RCLCPP_WARN_STREAM(nh_->get_logger(), "Could not switch input to: Twist");
+        }
+      }
+      break;
+    case KEYCODE_W:
+      RCLCPP_INFO(nh_->get_logger(), "W pressed - switching to planning frame");
+      command_frame_id_ = PLANNING_FRAME_ID;
+      current_twist_cmd_.header.frame_id = command_frame_id_;
+      break;
+    case KEYCODE_E:
+      RCLCPP_INFO(nh_->get_logger(), "E pressed - switching to end effector frame");
+      command_frame_id_ = EE_FRAME_ID;
+      current_twist_cmd_.header.frame_id = command_frame_id_;
+      break;
+    case KEYCODE_Q:
+      RCLCPP_INFO(nh_->get_logger(), "Q pressed - quitting");
+      publishStopCommand();
+      exit(0);
+      break;
+    default:
+      RCLCPP_WARN(nh_->get_logger(), "Unknown key: 0x%02X (%c)", c, c);
+      break;
+  }
+}
+
+void KeyboardServo::handleKeyRelease()
+{
+  std::lock_guard<std::mutex> lock(command_mutex_);
+  key_pressed_ = false;
+  
+  // Immediately stop all motion for safety
+  RCLCPP_DEBUG(nh_->get_logger(), "Key released, stopping immediately");
+  
+  // Stop twist commands
+  current_twist_cmd_.twist.linear.x = 0.0;
+  current_twist_cmd_.twist.linear.y = 0.0;
+  current_twist_cmd_.twist.linear.z = 0.0;
+  current_twist_cmd_.twist.angular.x = 0.0;
+  current_twist_cmd_.twist.angular.y = 0.0;
+  current_twist_cmd_.twist.angular.z = 0.0;
+  
+  // Stop joint commands
+  std::fill(current_joint_cmd_.velocities.begin(), current_joint_cmd_.velocities.end(), 0.0);
+  
+  twist_active_ = false;
+  joint_active_ = false;
 }
