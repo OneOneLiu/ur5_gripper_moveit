@@ -11,7 +11,7 @@ def generate_launch_description():
         MoveItConfigsBuilder("ur5_gripper")
         .robot_description(file_path="config/ur5.urdf_isaac.xacro")
         .robot_description_semantic(file_path="config/ur5.srdf")
-        .trajectory_execution(file_path="config/moveit_controllers.yaml")
+        .trajectory_execution(file_path="config/moveit_controllers_isaac.yaml")
         .to_moveit_configs()
     )
     # Start the actual move_group node/action server

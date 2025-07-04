@@ -1,0 +1,27 @@
+moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
+
+moveit_simple_controller_manager:
+  controller_names:
+    - manipulator_controller   # ← 名称保持一致
+    - gripper_controller
+
+  # ① 六轴机械臂
+  manipulator_controller:
+    type: FollowJointTrajectory            # JointTrajectoryController 用这个
+    action_ns: follow_joint_trajectory     # 默认为这条，也可以省略
+    default: true
+    joints:
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_1_joint
+      - wrist_2_joint
+      - wrist_3_joint
+
+  # ② Gripper
+  gripper_controller:
+    type: GripperCommand                   # GripperActionController 用这个
+    action_ns: gripper_cmd                 # 控制器默认 topic，按实际改
+    default: false
+    joints:
+      - robotiq_85_left_knuckle_joint
