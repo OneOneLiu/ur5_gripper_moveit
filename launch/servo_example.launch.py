@@ -40,12 +40,12 @@ def generate_launch_description():
     )
 
     # Get parameters for the Servo node
-    servo_yaml = load_yaml("ur5_gripper_ros2_moveit", "config/panda_simulated_config.yaml")
-    servo_params = {"ur5_gripper_ros2_moveit": servo_yaml}
+    servo_yaml = load_yaml("ur5_gripper_moveit", "config/panda_simulated_config.yaml")
+    servo_params = {"ur5_gripper_moveit": servo_yaml}
 
     # RViz
     rviz_config_file = (
-        get_package_share_directory("ur5_gripper_ros2_moveit") + "/config/demo_rviz_config.rviz"
+        get_package_share_directory("ur5_gripper_moveit") + "/config/demo_rviz_config.rviz"
     )
     rviz_node = Node(
         package="rviz2",
@@ -61,7 +61,7 @@ def generate_launch_description():
 
     # ros2_control using FakeSystem as hardware
     ros2_controllers_path = os.path.join(
-        get_package_share_directory("ur5_gripper_ros2_moveit"),
+        get_package_share_directory("ur5_gripper_moveit"),
         "config",
         "ros2_controllers_servo_example.yaml",
     )

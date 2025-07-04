@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(ur5_gripper_ros2_moveit_config)
+project(ur5_gripper_moveit_config)
 
 find_package(ament_cmake REQUIRED)
 

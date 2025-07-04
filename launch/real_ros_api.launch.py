@@ -10,7 +10,7 @@ from moveit_configs_utils import MoveItConfigsBuilder
 
 def generate_launch_description():
     moveit_config = (
-        MoveItConfigsBuilder("ur5_gripper_ros2")
+        MoveItConfigsBuilder("ur5_gripper")
         .robot_description(file_path="config/ur5.urdf.xacro")
         .joint_limits(file_path="config/joint_limits.yaml")
         .to_moveit_configs()
@@ -23,7 +23,7 @@ def generate_launch_description():
 
     # Get parameters for the Servo node
     servo_params = {
-        "moveit_servo": ParameterBuilder("ur5_gripper_ros2_moveit_config")
+        "moveit_servo": ParameterBuilder("ur5_gripper_moveit_config")
         .yaml("config/ur_real_servo_config.yaml")
         .to_dict()
     }
@@ -34,7 +34,7 @@ def generate_launch_description():
 
     # RViz
     rviz_config_file = (
-        get_package_share_directory("ur5_gripper_ros2_moveit_config")
+        get_package_share_directory("ur5_gripper_moveit_config")
         + "/config/demo_rviz_config_ros.rviz"
     )
     rviz_node = launch_ros.actions.Node(
