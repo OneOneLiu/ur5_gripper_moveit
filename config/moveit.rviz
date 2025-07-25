@@ -5,6 +5,8 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /RobotModel1/Description Topic1
+        - /MotionPlanning1
+        - /MotionPlanning1/Planning Request1
       Splitter Ratio: 0.5
     Tree Height: 242
   - Class: rviz_common/Selection
@@ -72,6 +74,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        finger_center:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         flange:
           Alpha: 1
           Show Axes: false
@@ -81,10 +87,25 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        ft300_mounting_plate:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        ft300_sensor:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         ft_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        realsense_camera:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         robotiq_85_base_link:
           Alpha: 1
           Show Axes: false
@@ -130,6 +151,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        robotiq_ft_frame_id:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         shoulder_link:
           Alpha: 1
           Show Axes: false
@@ -215,6 +240,10 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          finger_center:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           flange:
             Alpha: 1
             Show Axes: false
@@ -224,10 +253,25 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          ft300_mounting_plate:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          ft300_sensor:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           ft_frame:
             Alpha: 1
             Show Axes: false
             Show Trail: false
+          realsense_camera:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           robotiq_85_base_link:
             Alpha: 1
             Show Axes: false
@@ -273,6 +317,10 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          robotiq_ft_frame_id:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           shoulder_link:
             Alpha: 1
             Show Axes: false
@@ -327,7 +375,7 @@ Visualization Manager:
         Colliding Link Color: 255; 0; 0
         Goal State Alpha: 1
         Goal State Color: 250; 128; 0
-        Interactive Marker Size: 0
+        Interactive Marker Size: 0.10000000149011612
         Joint Violation Color: 255; 0; 255
         Planning Group: manipulator
         Query Goal State: true
@@ -365,6 +413,10 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          finger_center:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           flange:
             Alpha: 1
             Show Axes: false
@@ -374,10 +426,25 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          ft300_mounting_plate:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          ft300_sensor:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           ft_frame:
             Alpha: 1
             Show Axes: false
             Show Trail: false
+          realsense_camera:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           robotiq_85_base_link:
             Alpha: 1
             Show Axes: false
@@ -423,6 +490,10 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          robotiq_ft_frame_id:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           shoulder_link:
             Alpha: 1
             Show Axes: false
@@ -507,25 +578,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 2.7053792476654053
+      Distance: 1.1026315689086914
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.0457618348300457
-        Y: -0.07058511674404144
-        Z: 0.49734944105148315
+        X: 0.1903967559337616
+        Y: -0.22907233238220215
+        Z: 0.35079044103622437
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.11039826273918152
+      Pitch: 0.5503981709480286
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.2803983688354492
+      Yaw: 1.1353965997695923
     Saved: ~
 Window Geometry:
   Displays:

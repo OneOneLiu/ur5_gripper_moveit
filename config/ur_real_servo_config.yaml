@@ -63,6 +63,7 @@ joint_command_in_topic: ~/delta_joint_cmds # Topic for incoming joint angle comm
 joint_topic: /joint_states
 status_topic: ~/status # Publish status to this topic
 command_out_topic: /scaled_joint_trajectory_controller/joint_trajectory # Publish outgoing commands here
+pose_command_in_topic: ~/delta_pose_cmds  # Topic for incoming Cartesian pose commands
 
 ## Collision checking for the entire robot body
 check_collisions: true # Check collisions?
