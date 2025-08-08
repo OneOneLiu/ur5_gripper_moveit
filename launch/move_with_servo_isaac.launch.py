@@ -15,15 +15,16 @@ from launch.actions import TimerAction
 
 本launch文件用于启动moveit核心节点，伺服节点以及rviz可视化
 
-它并不启动robot_state_publisher节点，因为robot_state_publisher节点属于对机器人的控制，而不是moveit相关的东西，所以做了隔离。robot_state_publisher节点由跟硬件通信的launch文件启动
+它并不启动robot_state_publisher节点，这个是属于对机器人的控制，而不是moveit相关的东西，所以做了隔离。robot_state_publisher节点由跟（仿真）硬件通信的launch文件启动
 '''
 
 def generate_launch_description():
     # ========= MoveIt Config =========
     moveit_config = (
         MoveItConfigsBuilder("ur5", package_name="ur5_gripper_moveit_config")
-        .robot_description(file_path="config/ur5.urdf.xacro")
+        .robot_description(file_path="config/ur5.urdf_isaac.xacro")
         .joint_limits(file_path="config/joint_limits.yaml")
+        .trajectory_execution(file_path="config/moveit_controllers_isaac.yaml") # 使用这个配置文件，而不是默认的moveit_controllers.yaml
         .planning_pipelines(
             pipelines=["ompl", "chomp", "pilz_industrial_motion_planner", "stomp"]
         )
@@ -63,7 +64,7 @@ def generate_launch_description():
     # ========= Servo Container Node =========
     servo_params = {
         "moveit_servo": ParameterBuilder("ur5_gripper_moveit_config")
-        .yaml("config/ur_real_servo_config.yaml")
+        .yaml("config/ur_isaac_servo_config.yaml")
         .to_dict()
     }
 
