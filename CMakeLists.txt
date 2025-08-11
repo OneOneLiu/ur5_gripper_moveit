@@ -10,6 +10,14 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
     geometry_msgs
     moveit_core
     moveit_msgs
+    moveit_ros_planning
+    moveit_ros_planning_interface
+    moveit_visual_tools
+    rclcpp
+    rclcpp_action
+    rviz_visual_tools
+    Boost
+    Eigen3
 )
 
 find_package(ament_cmake REQUIRED)
@@ -33,8 +41,14 @@ add_executable(servo_keyboard_input src/servo_keyboard_input.cpp)
 target_include_directories(servo_keyboard_input PUBLIC include)
 ament_target_dependencies(servo_keyboard_input ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
+# Planning Scene Tutorial
+add_executable(ignore_certain_collisions src/ignore_certain_collisions.cpp)
+target_include_directories(ignore_certain_collisions PUBLIC include)
+ament_target_dependencies(ignore_certain_collisions ${THIS_PACKAGE_INCLUDE_DEPENDS} Boost)
+
 # Install Binaries
 install(
   TARGETS servo_keyboard_input
+  ignore_certain_collisions
   DESTINATION lib/${PROJECT_NAME}
 )
