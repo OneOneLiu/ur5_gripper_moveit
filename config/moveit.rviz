@@ -7,6 +7,7 @@ Panels:
         - /RobotModel1/Description Topic1
         - /MotionPlanning1
         - /MotionPlanning1/Planning Request1
+        - /MarkerArray1
       Splitter Ratio: 0.5
     Tree Height: 242
   - Class: rviz_common/Selection
@@ -532,6 +533,18 @@ Visualization Manager:
         Show Robot Visual: true
       Value: true
       Velocity_Scaling_Factor: 0.1
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /move_group_tutorial
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -578,7 +591,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 1.1026315689086914
+      Distance: 4.525372505187988
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -593,10 +606,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5503981709480286
+      Pitch: 0.6553980112075806
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.1353965997695923
+      Yaw: 1.870396375656128
     Saved: ~
 Window Geometry:
   Displays:
