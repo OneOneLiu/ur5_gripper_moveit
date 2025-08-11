@@ -48,23 +48,38 @@ joint_limits:
     max_velocity: 3.1415926535897931
     has_acceleration_limits: true
     max_acceleration: 10.0
+    has_position_limits: true
+    min_position: -3.1415926535897931 # To avoid robot occlusion
+    max_position: -0.1 # To avoid robot occlusion
   shoulder_pan_joint:
     has_velocity_limits: true
     max_velocity: 3.1415926535897931
     has_acceleration_limits: true
     max_acceleration: 10.0
+    has_position_limits: true
+    min_position: -1.5707963267948966 # To avoid cable stretching
+    max_position: 1.5707963267948966 # To avoid cable stretching
   wrist_1_joint:
     has_velocity_limits: true
     max_velocity: 3.1415926535897931
     has_acceleration_limits: true
     max_acceleration: 10.0
+    has_position_limits: true
+    min_position: -3.1415926535897931 # To avoid cable stretching
+    max_position: 0.0 # To avoid cable stretching
   wrist_2_joint:
     has_velocity_limits: true
     max_velocity: 3.1415926535897931
     has_acceleration_limits: true
     max_acceleration: 10.0
+    has_position_limits: true
+    min_position: -3.3 # To avoid cable stretching
+    max_position: 0.2 # To avoid cable stretching
   wrist_3_joint:
     has_velocity_limits: true
     max_velocity: 3.1415926535897931
     has_acceleration_limits: true
     max_acceleration: 10.0
+    has_position_limits: true
+    min_position: -3.1415926535897931 # To avoid cable stretching
+    max_position: 3.0 # To avoid cable stretching
