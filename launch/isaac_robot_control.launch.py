@@ -9,49 +9,11 @@ from moveit_configs_utils import MoveItConfigsBuilder
 def generate_launch_description():
     moveit_config = (
         MoveItConfigsBuilder("ur5_gripper")
-        .robot_description(file_path="config/ur5.urdf_isaac.xacro")
+        .robot_description(file_path="config/ur5.urdf_fake.xacro")
         .robot_description_semantic(file_path="config/ur5.srdf")
-        .trajectory_execution(file_path="config/moveit_controllers_isaac.yaml")
         .to_moveit_configs()
     )
-    # Start the actual move_group node/action server
-    move_group_node = Node(
-        package="moveit_ros_move_group",
-        executable="move_group",
-        output="screen",
-        parameters=[moveit_config.to_dict()],
-    )
-
-    # RViz
-    rviz_config_file = (
-        get_package_share_directory("ur5_gripper_moveit_config") + "/config/demo_rviz_config.rviz"
-    )
     
-    rviz_node = Node(
-        package="rviz2",
-        executable="rviz2",
-        name="rviz2",
-        output="log",
-        arguments=["-d", rviz_config_file],
-        parameters=[
-            moveit_config.robot_description,
-            moveit_config.robot_description_semantic,
-            moveit_config.robot_description_kinematics,
-            moveit_config.planning_pipelines,
-            moveit_config.joint_limits,
-        ],
-    )
-
-    # # Static TF
-    # static_tf = Node(
-    #     package="tf2_ros",
-    #     executable="static_transform_publisher",
-    #     name="static_transform_publisher",
-    #     output="log",
-    #     arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "world", "base_link"],
-    # )
-
-    # Publish TF
     robot_state_publisher = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
@@ -92,10 +54,8 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
-            rviz_node,
-            # static_tf,
+            # rviz_node,
             robot_state_publisher,
-            move_group_node,
             ros2_control_node,
         ]
         + load_controllers
